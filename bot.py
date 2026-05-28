@@ -1,4 +1,5 @@
 import asyncio
+from aiogram.filters import StateFilter
 from aiogram import Bot, Dispatcher, Router, F
 from aiogram.types import Message
 from aiogram.fsm.state import StatesGroup, State
@@ -30,7 +31,7 @@ class Form(StatesGroup):
 @router.message(F.text == "/start")
 async def start(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Начать", callback_data="start_form")]
+        [InlineKeyboardButton(text="Start", callback_data="start_form")]
     ])
 
     await message.answer(
@@ -113,12 +114,18 @@ async def final(message: Message, state: FSMContext):
 
     await message.answer("If you'd like to submit another application, click below.", reply_markup=keyboard)
 
-@router.message(F.text == "/applications")
-async def applications(message: Message):
+@router.message(StateFilter("*"), F.text == "/applications")
+async def applications(message: Message, state: FSMContext):
     if message.from_user.id != ADMIN_ID:
         return
 
+    await state.clear()
+
+    print("Fetching applications...")  
+
     rows = await get_applications(10)
+
+    print("Rows:", rows)  
 
     if not rows:
         await message.answer("No applications")
