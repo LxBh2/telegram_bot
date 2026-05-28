@@ -8,6 +8,7 @@ from aiogram.exceptions import TelegramBadRequest
 
 from config import TOKEN, ADMIN_ID
 from db import init_db, save_application, get_applications
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
 bot = Bot(token=TOKEN)
@@ -25,6 +26,22 @@ class Form(StatesGroup):
     telegram = State()
     text = State()
 
+@router.message(F.text == "/start")
+async def start(message: Message, state: FSMContext):
+    # Приветственное сообщение
+    welcome_text = (
+        "Здравствуйте! Я бот, который помогает собирать заявки на работу. Я буду задавать вам вопросы, и вы сможете заполнить анкету. Нажмите кнопку 'Начать', чтобы продолжить."
+    )
+    await message.answer(welcome_text)
+
+    # Создаем клавиатуру
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Начать")]
+        ],
+        resize_keyboard=True,  # чтобы кнопка была компактной
+    )
+    await message.answer("Нажмите 'Начать', чтобы заполнить анкету.", reply_markup=keyboard)
 
 # START
 @router.message(F.text == "/start")
