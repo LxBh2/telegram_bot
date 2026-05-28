@@ -34,7 +34,7 @@ async def start(message: Message):
     ])
 
     await message.answer(
-        "Bot for submitting an application. Click "Start".",
+        'Bot for submitting an application. Click "Start".',
         reply_markup=keyboard
     )
 
