@@ -81,8 +81,7 @@ async def instagram(message: Message, state: FSMContext):
 async def telegram_step(message: Message, state: FSMContext):
     await state.update_data(telegram=message.text)
     await state.set_state(Form.text)
-    await message.answer("Resume")
-
+    await message.answer("Application Text")
 
 
 @router.message(Form.text)
@@ -92,7 +91,7 @@ async def final(message: Message, state: FSMContext):
     await save_application(data, message.text)
 
     text = (
-        f"🔔 <b>New Resume/b>\n\n"
+        f"🔔 <b>New Resume</b>\n\n"
         f"👤 Name: {data.get('name')}\n"
         f"🎂 Age: {data.get('age')}\n"
         f"📞 Contact: {data.get('contact')}\n"
@@ -107,11 +106,12 @@ async def final(message: Message, state: FSMContext):
         print("Error sending to admin:", e)
 
     await message.answer("The application has been sent.")
-    await state.clear()
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Fill it out again", callback_data="start_form")]
-])
 
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Fill it out again", callback_data="start_form")]
+    ])
+
+    await message.answer("If you'd like to submit another application, click below.", reply_markup=keyboard)
 
 @router.message(F.text == "/applications")
 async def applications(message: Message):
