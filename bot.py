@@ -8,7 +8,7 @@ from aiogram.exceptions import TelegramBadRequest
 
 from config import TOKEN, ADMIN_ID
 from db import init_db, save_application, get_applications
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 
 bot = Bot(token=TOKEN)
@@ -28,23 +28,22 @@ class Form(StatesGroup):
 
 # START
 @router.message(F.text == "/start")
-async def start(message: Message, state: FSMContext):
-    # Приветственное сообщение
-    welcome_text = (
-        "Здравствуйте! Я бот, который помогает собирать заявки на работу. Я буду задавать вам вопросы, и вы сможете заполнить анкету. Нажмите кнопку 'Начать', чтобы продолжить."
+async def start(message: Message):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Начать", callback_data="start_form")]
+    ])
+
+    await message.answer(
+        "Бот для подачи заявки. Нажми «Начать».",
+        reply_markup=keyboard
     )
-    await message.answer(welcome_text)
 
-    # Создаем клавиатуру
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="Начать")]
-        ],
-        resize_keyboard=True,  # чтобы кнопка была компактной
-    )
-    await message.answer("Нажмите 'Начать', чтобы заполнить анкету.", reply_markup=keyboard)
-
-
+@router.callback_query(F.data == "start_form")
+async def start_form(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Form.name)
+    await callback.message.answer("Напиши своё имя:")
+    await callback.answer()
+    
 # NAME
 @router.message(Form.name)
 async def name(message: Message, state: FSMContext):
@@ -109,6 +108,10 @@ async def final(message: Message, state: FSMContext):
 
     await message.answer("Заявка отправлена")
     await state.clear()
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Заполнить ещё раз", callback_data="start_form")]
+])
+
 
 @router.message(F.text == "/applications")
 async def applications(message: Message):
