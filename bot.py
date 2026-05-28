@@ -26,7 +26,7 @@ class Form(StatesGroup):
     telegram = State()
     text = State()
 
-# START
+
 @router.message(F.text == "/start")
 async def start(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -34,57 +34,57 @@ async def start(message: Message):
     ])
 
     await message.answer(
-        "Бот для подачи заявки. Нажми «Начать».",
+        "Bot for submitting an application. Click "Start".",
         reply_markup=keyboard
     )
 
 @router.callback_query(F.data == "start_form")
 async def start_form(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Form.name)
-    await callback.message.answer("Напиши своё имя:")
+    await callback.message.answer("Enter your name:")
     await callback.answer()
-    
-# NAME
+
+
 @router.message(Form.name)
 async def name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(Form.age)
-    await message.answer("Сколько тебе лет?")
+    await message.answer("How old are you?")
 
 
-# AGE
+
 @router.message(Form.age)
 async def age(message: Message, state: FSMContext):
     await state.update_data(age=message.text)
     await state.set_state(Form.contact)
-    await message.answer("Контакт (телефон или email):")
+    await message.answer("Contact (phone or email):")
 
 
-# CONTACT
+
 @router.message(Form.contact)
 async def contact(message: Message, state: FSMContext):
     await state.update_data(contact=message.text)
     await state.set_state(Form.instagram)
-    await message.answer("Instagram (если есть):")
+    await message.answer("Instagram (if any):")
 
 
-# INSTAGRAM
+
 @router.message(Form.instagram)
 async def instagram(message: Message, state: FSMContext):
     await state.update_data(instagram=message.text)
     await state.set_state(Form.telegram)
-    await message.answer("Telegram:")
+    await message.answer("Telegram (if any):")
 
 
-# TELEGRAM
+
 @router.message(Form.telegram)
 async def telegram_step(message: Message, state: FSMContext):
     await state.update_data(telegram=message.text)
     await state.set_state(Form.text)
-    await message.answer("Текст заявки:")
+    await message.answer("Resume")
 
 
-# FINAL
+
 @router.message(Form.text)
 async def final(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -92,24 +92,24 @@ async def final(message: Message, state: FSMContext):
     await save_application(data, message.text)
 
     text = (
-        f"🔔 <b>Новая заявка</b>\n\n"
-        f"👤 Имя: {data.get('name')}\n"
-        f"🎂 Возраст: {data.get('age')}\n"
-        f"📞 Контакт: {data.get('contact')}\n"
+        f"🔔 <b>New Resume/b>\n\n"
+        f"👤 Name: {data.get('name')}\n"
+        f"🎂 Age: {data.get('age')}\n"
+        f"📞 Contact: {data.get('contact')}\n"
         f"📸 Instagram: {data.get('instagram')}\n"
         f"✈️ Telegram: {data.get('telegram')}\n\n"
-        f"📝 Текст:\n{message.text}"
+        f"📝 Resume:\n{message.text}"
     )
 
     try:
         await bot.send_message(ADMIN_ID, text, parse_mode="HTML")
     except TelegramBadRequest as e:
-        print("Ошибка отправки админу:", e)
+        print("Error sending to admin:", e)
 
-    await message.answer("Заявка отправлена")
+    await message.answer("The application has been sent.")
     await state.clear()
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Заполнить ещё раз", callback_data="start_form")]
+    [InlineKeyboardButton(text="Fill it out again", callback_data="start_form")]
 ])
 
 
@@ -121,7 +121,7 @@ async def applications(message: Message):
     rows = await get_applications(10)
 
     if not rows:
-        await message.answer("Заявок нет")
+        await message.answer("No applications")
         return
 
     for r in rows:
