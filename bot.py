@@ -26,6 +26,7 @@ class Form(StatesGroup):
     telegram = State()
     text = State()
 
+# START
 @router.message(F.text == "/start")
 async def start(message: Message, state: FSMContext):
     # Приветственное сообщение
@@ -43,11 +44,6 @@ async def start(message: Message, state: FSMContext):
     )
     await message.answer("Нажмите 'Начать', чтобы заполнить анкету.", reply_markup=keyboard)
 
-# START
-@router.message(F.text == "/start")
-async def start(message: Message, state: FSMContext):
-    await state.set_state(Form.name)
-    await message.answer("Напиши своё имя:")
 
 # NAME
 @router.message(Form.name)
